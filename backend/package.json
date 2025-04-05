@@ -8,6 +8,7 @@
   "dependencies": {
     "@google/genai": "^0.7.0",
     "@google/generative-ai": "^0.24.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express.js": "^1.0.0"
   }

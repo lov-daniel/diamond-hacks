@@ -6,6 +6,27 @@ document.getElementById("highlight").addEventListener("click", async () => {
   });
 });
 
+document.getElementById("summarize").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  console.log("Triggering summarization on active tab...");
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["summarize.js"]
+  });
+});
+
+document.getElementById("questions").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  console.log("Triggering summarization on active tab...");
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["practice-questions.js"]
+  });
+});
+
+
 document.addEventListener("DOMContentLoaded", () => {
   // ADDED: Clear any stored active state every time the popup loads.
   // This resets the button active state when the website is refreshed or changed.
