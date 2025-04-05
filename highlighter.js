@@ -50,30 +50,33 @@
       window.currentHighlightEl = null; // Currently highlighted element.
       window.currentAnimationId = null;   // Unique ID for the current animation.
     
-      // --- Helper: Clear highlighting on an element. ---
-      function clearHighlight(el) { // NEW: This function removes yellow backgrounds and outlines.
+      // --- Helper: Remove all highlight styles from an element ---
+      function clearHighlight(el) {
         if (!el) return;
-        const spans = el.querySelectorAll("span");
-        spans.forEach(span => span.style.backgroundColor = "");
+        // Remove yellow background from all spans within the element.
+        el.querySelectorAll("span").forEach(span => span.style.backgroundColor = "");
         el.style.outline = "";
       }
     
-      // --- Hover Effect ---
-      document.addEventListener("mouseover", (e) => {
+  // --- Hover Effect ---
+    document.addEventListener("mouseover", (e) => {
         const allowedEl = e.target.closest(ALLOWED_TAGS.join(","));
-        if (allowedEl) {
-          allowedEl.style.outline = "2px solid #3498db";
-          allowedEl.style.cursor = "pointer";
-        }
-      });
-    
-      document.addEventListener("mouseout", (e) => {
-        const allowedEl = e.target.closest(ALLOWED_TAGS.join(","));
+        // Only apply blue outline if the element is NOT the currently highlighted one.
         if (allowedEl && allowedEl !== window.currentHighlightEl) {
-          allowedEl.style.outline = "";
-          allowedEl.style.cursor = "";
+        allowedEl.style.outline = "2px solid #3498db";
+        allowedEl.style.cursor = "pointer";
         }
-      });
+    });
+    
+    document.addEventListener("mouseout", (e) => {
+        const allowedEl = e.target.closest(ALLOWED_TAGS.join(","));
+        // Only remove the blue outline if this element is not currently active.
+        if (allowedEl && allowedEl !== window.currentHighlightEl) {
+        allowedEl.style.outline = "";
+        allowedEl.style.cursor = "";
+        }
+    });
+  
     
       // --- Click to Toggle Progressive Highlight Animation ---
       document.addEventListener("click", (event) => {
@@ -86,28 +89,64 @@
     
         // If a different element is already highlighted, clear its highlighting immediately.
         if (window.currentHighlightEl && window.currentHighlightEl !== el) {
-          window.currentAnimationId = Date.now(); // new id cancels previous animation
-          clearHighlight(window.currentHighlightEl); // NEW: Remove highlighting from previous block
+          window.currentAnimationId = Date.now(); // New ID cancels previous animation
+          clearHighlight(window.currentHighlightEl);
           window.currentHighlightEl = null;
         }
     
         // Toggle: if the same element is clicked, cancel its highlighting.
         if (window.currentHighlightEl === el) {
-          window.currentAnimationId = Date.now(); // cancel current animation
-          clearHighlight(el); // NEW: Remove highlighting from this block
+          window.currentAnimationId = Date.now(); // Cancel current animation
+          clearHighlight(el);
           window.currentHighlightEl = null;
           return;
         }
     
         // Start highlighting the new element.
         window.currentHighlightEl = el;
-        const animationId = Date.now(); // NEW: unique id for this animation
+        const animationId = Date.now(); // NEW: Unique ID for this animation
         window.currentAnimationId = animationId;
         el.style.outline = "2px solid #2ecc71"; // Green outline indicates active highlighting
         progressiveHighlightText(el, animationId);
       });
     
-      // Helper function that waits while highlighting is paused.
+      // --- Helper: Recursively wrap text nodes with spans --- (UPDATED)
+      // NEW: First collect all text nodes, then wrap each word in a span.
+      function wrapTextNodes(root) {
+        let spans = [];
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+          acceptNode: function(node) {
+            return /\S/.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+          }
+        }, false);
+        // NEW: Collect text nodes into an array before modifying the DOM.
+        let textNodes = [];
+        let currentNode;
+        while (currentNode = walker.nextNode()) {
+          textNodes.push(currentNode);
+        }
+        // Process each text node.
+        textNodes.forEach(textNode => {
+          const parent = textNode.parentNode;
+          const text = textNode.nodeValue;
+          const parts = text.split(/(\s+)/); // Split, keeping whitespace
+          const frag = document.createDocumentFragment();
+          parts.forEach(part => {
+            if (/\S/.test(part)) {
+              const span = document.createElement("span");
+              span.textContent = part;
+              frag.appendChild(span);
+              spans.push(span);
+            } else {
+              frag.appendChild(document.createTextNode(part));
+            }
+          });
+          parent.replaceChild(frag, textNode);
+        });
+        return spans;
+      }
+    
+      // --- Helper function: Wait while highlighting is paused ---
       async function waitWhilePaused() {
         while (window.highlightPaused) {
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -116,29 +155,14 @@
     
       // --- Function to Animate Highlighting One Word at a Time ---
       async function progressiveHighlightText(el, animationId) {
-        // Get the element's text content and split it into words.
-        const text = el.innerText;
-        const words = text.split(/\s+/);
+        // Instead of clearing the element's content, wrap its text nodes with spans to preserve HTML.
+        const spans = wrapTextNodes(el);
     
-        // Clear the element's content.
-        el.innerHTML = "";
-    
-        // Create an array of spans—one for each word—and insert them into the element.
-        const spans = words.map((word) => {
-          const span = document.createElement("span");
-          span.textContent = word;
-          span.style.backgroundColor = "";
-          el.appendChild(span);
-          // Add a space after each word for proper spacing.
-          el.appendChild(document.createTextNode(" "));
-          return span;
-        });
-    
-        // Loop through each word asynchronously.
+        // Loop through each word span asynchronously.
         for (let i = 0; i < spans.length; i++) {
-          // Check if a new animation has been started.
+          // Check if a new animation has started.
           if (window.currentAnimationId !== animationId) {
-            clearHighlight(el); // NEW: Clear highlights if animation is cancelled.
+            clearHighlight(el);
             return;
           }
           if (i > 0) {
@@ -147,18 +171,14 @@
           spans[i].style.backgroundColor = "yellow";
           await waitWhilePaused();
           let currentWPS = window.highlightInterval || 2;
-          let delay = 1000 / currentWPS; // Delay in milliseconds
+          let delay = 1000 / currentWPS; // Convert words per second to delay in ms.
           await new Promise(resolve => setTimeout(resolve, delay));
         }
-        // Final delay and clear the background of the last word.
-        let currentWPSFinal = window.highlightInterval || 2;
-        let finalDelay = 1000 / currentWPSFinal;
-        await new Promise(resolve => setTimeout(resolve, finalDelay));
         if (spans.length > 0) {
           spans[spans.length - 1].style.backgroundColor = "";
         }
-        clearHighlight(el); // NEW: Ensure highlighting is removed at the end.
-        // If this animation is still current, clear the active element.
+        // Remove the outline after finishing.
+        clearHighlight(el);
         if (window.currentAnimationId === animationId) {
           window.currentHighlightEl = null;
         }
