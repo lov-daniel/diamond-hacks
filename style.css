@@ -73,3 +73,7 @@ body {
     overflow: hidden;  /* Prevent grid items from overflowing */
     max-height: 100%;  /* Ensure the grid does not exceed the popup height */
   }
+
+  .highlighted {
+    background-color: yellow;
+  }
