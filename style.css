@@ -1,79 +1,106 @@
 body {
-    font-family: sans-serif;
-    background-color: #f9fafb;
-    color: #1f2937;
-    margin: 0;
-    padding: 0;
-    width: 600px;  /* Set the width of the popup */
-    height: 400px; /* Set the height of the popup */
-    overflow: hidden;  /* Prevent scrolling if needed */
-  }
-  
-  .container {
-    padding: 16px;
-  }
+  font-family: sans-serif;
+  background-color: #f9fafb;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  width: 600px;  /* Popup width remains fixed */
+  /* Removed fixed height to avoid empty space */
+  overflow: auto; /* Allow scrolling if content overflows */
+}
 
-  h1 {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 12px;
-    display: flex;  /* Use flexbox to align the title and image */
-    align-items: center;  /* Center align the logo and text vertically */
-    justify-content: center;
-  }
-  
-  h1 img {
-    border-radius: 100%;
-    width: 32px;  /* Set the logo width */
-    height: 32px;  /* Set the logo height */
-    margin-right: 8px;  /* Add some space between the logo and the title */
-  }
-  
-  button {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    padding: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    display: flex;
-    flex-direction: column;  /* Stack icon and text vertically */
-    align-items: center;  /* Center horizontally */
-    justify-content: center;  /* Center vertically */
-  }
+.container {
+  padding: 16px;
+}
 
-  button.active {
-    background-color: #10b981;  /* Green color when clicked */
-  }
-  
-  button.inactive:hover {
-    background-color: #2563eb;
-  }
-  
-  #output {
-    margin-top: 12px;
-    font-size: 14px;
-  }
-  
-  .tool-icon {
-    width: 48px;  /* Adjust icon size */
-    height: 48px;
-    margin-bottom: 8px;  /* Space between icon and text */
-    object-fit: contain;
-  }
-  
-  .tool-grid {
-    display: grid;  /* Enable grid layout */
-    grid-template-columns: repeat(3, 1fr);  /* Create 3 equal columns */
-    gap: 16px;  /* Space between grid items */
-    width: 100%;  /* Ensure the grid takes full width of the container */
-    padding: 16px;
-    box-sizing: border-box;  /* Include padding in the total width */
-    overflow: hidden;  /* Prevent grid items from overflowing */
-    max-height: 100%;  /* Ensure the grid does not exceed the popup height */
-  }
+h1 {
+  font-size: 24px;  /* Increased title text size */
+  font-weight: bold;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .highlighted {
-    background-color: yellow;
-  }
+h1 img {
+  border-radius: 100%;
+  width: 32px;  /* Logo size remains the same */
+  height: 32px;
+  margin-right: 8px;
+}
+
+button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px;  /* Smaller button padding */
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;  /* Increased button text size */
+}
+
+button:hover {
+  transform: scale(1.05); /* Slight enlargement on hover */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+
+button.active {
+  background-color: #10b981;  /* Green when active */
+}
+
+button.inactive:hover {
+  background-color: #1f59d6;
+}
+
+#output {
+  margin-top: 12px;
+  font-size: 16px;  /* Increased output text size */
+}
+
+.tool-icon {
+  width: 32px;  /* Smaller icon size */
+  height: 32px;
+  margin-bottom: 4px;
+  object-fit: contain;
+}
+
+/* Arrange buttons and the slider container on one row */
+.tool-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#speed-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#speed-container label {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+#speed-container input[type="range"] {
+  width: 100px;
+}
+
+#speed-container #speed-value {
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+#speed-container p {
+  color: grey;
+  font-size: 12px;
+  margin: 4px 0 0 0;
+}
