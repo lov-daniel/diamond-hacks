@@ -3,100 +3,101 @@ const ALLOWED_TAGS = ["P", "DIV", "SPAN", "ARTICLE", "SECTION", "LI"];
 if (!window.bionicActivated) {
   window.bionicActivated = true;
 
-  let selectedElements = new Set();
-  let originalContentMap = new Map(); // Store original HTML
+  let originalContentMap = new Map();
+
+  // 🧼 Remove any bolded children before bolding a new parent
+  function removeNestedBionic(el) {
+    const innerBolded = el.querySelectorAll("[data-bionic='true']");
+    innerBolded.forEach((child) => {
+      const original = originalContentMap.get(child);
+      if (original) {
+        child.innerHTML = original;
+        child.removeAttribute("data-bionic");
+        originalContentMap.delete(child);
+        child.style.outline = "";
+      }
+    });
+  }
 
   // Hover outline
   document.addEventListener("mouseover", (e) => {
-    if (
-      ALLOWED_TAGS.includes(e.target.tagName) &&
-      !e.target.closest(".bionic-wrapper")
-    ) {
-      e.target.style.outline = "2px solid #3498db";
-      e.target.style.cursor = "pointer";
+    if (ALLOWED_TAGS.includes(e.target.tagName)) {
+      if (!e.target.closest("[data-bionic='true']")) {
+        e.target.style.outline = "2px solid #3498db";
+        e.target.style.cursor = "pointer";
+      }
     }
   });
 
   document.addEventListener("mouseout", (e) => {
-    if (
-      ALLOWED_TAGS.includes(e.target.tagName) &&
-      !e.target.closest(".bionic-wrapper")
-    ) {
-      e.target.style.outline = "";
-      e.target.style.cursor = "";
-    }
+    e.target.style.outline = "";
+    e.target.style.cursor = "";
   });
 
-  // Click to toggle select/unselect
-  document.addEventListener("click", (event) => {
-    const el = event.target;
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest(ALLOWED_TAGS.join(","));
+    if (!el) return;
 
-    // Ensure text has 5+ words and is not bolded
-    if (ALLOWED_TAGS.includes(el.tagName)) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (!selectedElements.has(el)) {
-        selectedElements.add(el);
-        originalContentMap.set(el, el.innerHTML);
-        el.style.outline = "2px solid #2ecc71";
-        boldElementText(el);
-      } else {
-        // Unbold if already selected
-        selectedElements.delete(el);
-        el.innerHTML = originalContentMap.get(el);
-        el.style.outline = "";
-        originalContentMap.delete(el);
+    // If already bolded, clicking anywhere inside will unbold it
+    if (el.closest("[data-bionic='true']")) {
+      const boldContainer = el.closest("[data-bionic='true']");
+      const original = originalContentMap.get(boldContainer);
+      if (original) {
+        boldContainer.innerHTML = original;
+        boldContainer.removeAttribute("data-bionic");
+        originalContentMap.delete(boldContainer);
+        boldContainer.style.outline = "";
       }
+      return;
+    }
+
+    // Only bold if it's not already bolded and has 5+ words
+    if (el.innerText.trim().split(/\s+/).length >= 5) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Remove bolded children first
+      removeNestedBionic(el);
+
+      // Store the cleaned version before bolding
+      originalContentMap.set(el, el.innerHTML);
+      applyBionicBolding(el);
+      el.dataset.bionic = "true";
+      el.style.outline = "2px solid #2ecc71";
     }
   });
 
-  function boldElementText(el) {
-    const text = el.innerText;
-    const words = text.split(/(\s+)/);
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "bionic-wrapper";
-    wrapper.style.display = "inline"; // Keeps layout intact
-
-    words.forEach((word) => {
-      if (/^\s+$/.test(word)) {
-        wrapper.appendChild(document.createTextNode(word));
-      } else {
-        const wordDiv = document.createElement("div");
-        wordDiv.className = "bionic-word";
-        wordDiv.style.display = "inline";
-        wordDiv.style.pointerEvents = "none"; // Prevent re-clicks
-        wordDiv.style.userSelect = "none"; // Prevent selection
-        wordDiv.style.outline = "none";
-
-        if (word.trim().length > 2) {
-          const split = Math.ceil(word.length * 0.5);
-          wordDiv.innerHTML = `<strong>${word.slice(
-            0,
-            split
-          )}</strong>${word.slice(split)}`;
-        } else {
-          wordDiv.textContent = word;
+  // Bionic bolding function
+  function applyBionicBolding(node) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      // Clean up existing <strong> tags
+      const strongs = node.querySelectorAll("strong");
+      strongs.forEach((strong) => {
+        const parent = strong.parentNode;
+        while (strong.firstChild) {
+          parent.insertBefore(strong.firstChild, strong);
         }
+        parent.removeChild(strong);
+      });
 
-        wrapper.appendChild(wordDiv);
-      }
-    });
+      // Recursively apply
+      Array.from(node.childNodes).forEach((child) => applyBionicBolding(child));
+    } else if (node.nodeType === Node.TEXT_NODE) {
+      const words = node.textContent.split(/(\s+)/);
+      const updatedWords = words.map((word) => {
+        const trimmed = word.trim();
+        if (trimmed.length > 2) {
+          const split = Math.ceil(trimmed.length * 0.5);
+          return `<strong>${trimmed.slice(0, split)}</strong>${trimmed.slice(
+            split
+          )}`;
+        }
+        return word;
+      });
 
-    // Replace element content
-    el.innerHTML = "";
-    el.appendChild(wrapper);
-  }
-
-  // Not used anymore but kept in case you need it
-  function isInsideStrong(node) {
-    while (node) {
-      if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "STRONG") {
-        return true;
-      }
-      node = node.parentNode;
+      const span = document.createElement("span");
+      span.innerHTML = updatedWords.join("");
+      node.replaceWith(span);
     }
-    return false;
   }
 }
