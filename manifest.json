@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Content Scraper",
+  "version": "1.0",
+  "description": "Pulls content from the current page.",
+  "permissions": ["scripting", "activeTab"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
