@@ -1,0 +1,62 @@
+body {
+    font-family: sans-serif;
+    background-color: #f9fafb;
+    color: #1f2937;
+    margin: 0;
+    padding: 0;
+    width: 600px;  /* Set the width of the popup */
+    height: 400px; /* Set the height of the popup */
+    overflow: hidden;  /* Prevent scrolling if needed */
+  }
+  
+  .container {
+    padding: 16px;
+  }
+  
+  h1 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-align: center;  /* Center the text within the <h1> */
+  }
+  
+  button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;  /* Stack icon and text vertically */
+    align-items: center;  /* Center horizontally */
+    justify-content: center;  /* Center vertically */
+  }
+  
+  button:hover {
+    background-color: #2563eb;
+  }
+  
+  #output {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  
+  .tool-icon {
+    width: 48px;  /* Adjust icon size */
+    height: 48px;
+    margin-bottom: 8px;  /* Space between icon and text */
+    object-fit: contain;
+  }
+  
+  .tool-grid {
+    display: grid;  /* Enable grid layout */
+    grid-template-columns: repeat(3, 1fr);  /* Create 3 equal columns */
+    gap: 16px;  /* Space between grid items */
+    width: 100%;  /* Ensure the grid takes full width of the container */
+    padding: 16px;
+    box-sizing: border-box;  /* Include padding in the total width */
+    overflow: hidden;  /* Prevent grid items from overflowing */
+    max-height: 100%;  /* Ensure the grid does not exceed the popup height */
+  }
