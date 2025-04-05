@@ -3,14 +3,19 @@
   "name": "Content Scraper",
   "version": "1.0",
   "description": "Pulls content from the current page.",
-  "permissions": ["scripting", "activeTab", "storage"],
+
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html"
   },
   "background": {
     "service_worker": "background.js"
-  },
-  "host_permissions": [
-    "<all_urls>"
-  ]
+  }
 }
