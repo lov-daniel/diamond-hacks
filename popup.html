@@ -6,23 +6,38 @@
   <link href="style.css" rel="stylesheet" />
 </head>
 <body>
-  <h1 class="title">Temporary Name</h1>
+  <h1 class="title">
+    <img src="assets/mascot.jpg" class="tool-icon">
+    Reading Toolbox
+  </h1>
 
   <div class="tool-grid">
-    <button id="get-content">
+    <button id="highlight">
       <img src="assets/book-icon.png" class="tool-icon" alt="Book Icon" />
       Text Highlighter
     </button>
 
-    <button id="get-content">
+    <button id="summarize">
       <img src="assets/book-icon.png" class="tool-icon" alt="Book Icon" />
       Summarize Text
     </button>
 
-    <button id="get-content">
+    <button id="generate-quiz">
       <img src="assets/book-icon.png" class="tool-icon" alt="Book Icon" />
       Generate Quiz
     </button>
+
+    <button id="start-highlight">
+      <img src="assets/book-icon.png" class="tool-icon" alt="Book Icon" />
+      Start Highlighting
+    </button>
+
+    <div id="speed-container">
+      <label for="highlight-speed">Highlight Speed (ms per word):</label>
+      <input type="range" id="highlight-speed" min="100" max="2000" step="100" value="600">
+      <span id="speed-value">600</span>
+    </div>
+    
   </div>
 
   <p id="output"></p>
