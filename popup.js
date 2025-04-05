@@ -15,4 +15,16 @@ document.getElementById("start-highlight").addEventListener("click", async () =>
       files: ["highlighter.js"]
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const speedSlider = document.getElementById("highlight-speed");
+  const speedDisplay = document.getElementById("speed-value");
+  if (speedSlider && speedDisplay) {
+    speedSlider.addEventListener("input", function() {
+      speedDisplay.textContent = this.value;
+    });
+  } else {
+    console.error("Slider elements not found.");
+  }
+});
   
