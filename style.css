@@ -12,12 +12,21 @@ body {
   .container {
     padding: 16px;
   }
-  
+
   h1 {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 12px;
-    text-align: center;  /* Center the text within the <h1> */
+    display: flex;  /* Use flexbox to align the title and image */
+    align-items: center;  /* Center align the logo and text vertically */
+    justify-content: center;
+  }
+  
+  h1 img {
+    border-radius: 100%;
+    width: 32px;  /* Set the logo width */
+    height: 32px;  /* Set the logo height */
+    margin-right: 8px;  /* Add some space between the logo and the title */
   }
   
   button {
@@ -33,8 +42,12 @@ body {
     align-items: center;  /* Center horizontally */
     justify-content: center;  /* Center vertically */
   }
+
+  button.active {
+    background-color: #10b981;  /* Green color when clicked */
+  }
   
-  button:hover {
+  button.inactive:hover {
     background-color: #2563eb;
   }
   
