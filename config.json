@@ -1,0 +1,4 @@
+{
+    "model": "gemini-pro",
+    "maxTokens": 1000
+}
