@@ -1,4 +1,4 @@
-document.getElementById("highlight").addEventListener("click", async () => {
+document.getElementById("Bionic-Text").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
