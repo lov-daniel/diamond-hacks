@@ -3,22 +3,24 @@ import generate from '../utils/gemini.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/questions', async (req, res) => {
   try {
-    const input = req.body.input;
-    const result = await generate(input);
-    res.json({ result });
+    const input = req.body.prompt;
+	console.log(`Trying to summarize ${input}`)
+    const result = await generate(`create some practice problems and a corresponding answer key so that I can test my understanding of this material: ${input}`);
+    res.json({ summary: result });
   } catch (error) {
     console.error('Error in /prompt:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-router.get('/', async (req, res) => {
+router.post('/summary', async (req, res) => {
 	try {
-	  const input = req.body.input;
-	  const result = await generate(input);
-	  res.json({ result });
+	  const input = req.body.prompt;
+	  console.log(`Trying to summarize ${input}`)
+	  const result = await generate(`summarize this test so that i can get a solid understanding	: ${input}`);
+	  res.json({ summary: result });
 	} catch (error) {
 	  console.error('Error in /prompt:', error);
 	  res.status(500).json({ error: 'Internal Server Error' });
