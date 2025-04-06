@@ -12,7 +12,7 @@ document.getElementById("summarize").addEventListener("click", async () => {
   console.log("Triggering summarization on active tab...");
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ["summarize.js"]
+    files: ["assets/pdf.min.js", "summarize.js"]
   });
 });
 
@@ -22,7 +22,7 @@ document.getElementById("questions").addEventListener("click", async () => {
   console.log("Triggering summarization on active tab...");
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ["practice-questions.js"]
+    files: ["assets/pdf.min.js", "practice-questions.js"]
   });
 });
 
