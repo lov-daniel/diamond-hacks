@@ -13,6 +13,7 @@
     "<all_urls>"
   ],
   "action": {
+    "default_icon": "assets/Icon.png",
     "default_popup": "popup.html"
   },
   "background": {

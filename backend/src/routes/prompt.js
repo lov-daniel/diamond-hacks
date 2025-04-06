@@ -19,7 +19,7 @@ router.post('/summary', async (req, res) => {
 	try {
 	  const input = req.body.prompt;
 	  console.log(`Trying to summarize ${input}`)
-	  const result = await generate(`summarize this test so that i can get a solid understanding	: ${input}`);
+	  const result = await generate(`summarize this text and explain it to me like i am 5: ${input}`);
 	  res.json({ summary: result });
 	} catch (error) {
 	  console.error('Error in /prompt:', error);
