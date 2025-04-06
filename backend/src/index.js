@@ -13,8 +13,11 @@ const app = express();
 import promptRoutes from './routes/prompt.js';
 
 app.use(cors({
-	origin: '*' 
-}));
+	origin: '*',  // <-- for public APIs or debugging
+	// origin: extensionOrigin,  // safer in production
+	methods: ['GET', 'POST', 'OPTIONS'],
+	allowedHeaders: ['Content-Type']
+  }));
 
 app.use(express.json());
 
