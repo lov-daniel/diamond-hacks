@@ -1,4 +1,5 @@
-# diamond-hacks
+# StudyBox
+Have you ever been studying and you just can't seem to focus? Studybox looks to remedy that by providing you some tools to make your study sessions feel more productive.
 
 
 # HOW TO RUN
