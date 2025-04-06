@@ -56,7 +56,7 @@ if (!window.summarizeActivated) {
       e.stopPropagation();
     
       try {
-        const response = await fetch('https://geminibackend.netlify.app/prompt/summary', {
+        const response = await fetch('https://diamond-hacks.onrender.com/prompt/summary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: selectedText })
@@ -136,7 +136,7 @@ if (!window.summarizeActivated) {
         try {
           const text = await extractTextFromPdf(document.location.href);
           try {
-            const response = await fetch('https://geminibackend.netlify.app/prompt/summary', {
+            const response = await fetch('https://diamond-hacks.onrender.com/prompt/summary', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ prompt: text })

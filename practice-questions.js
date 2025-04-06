@@ -138,7 +138,7 @@ function markdownToHtml(markdown) {
         const selectedText = allowedEl.innerText.trim();
     
         try {
-          const response = await fetch('https://geminibackend.netlify.app/prompt/questions', {
+          const response = await fetch('https://diamond-hacks.onrender.com/prompt/questions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: selectedText })
@@ -192,7 +192,7 @@ function markdownToHtml(markdown) {
       try {
         const text = await extractTextFromPdf(document.location.href);
         try {
-          const response = await fetch('https://geminibackend.netlify.app/prompt/questions', {
+          const response = await fetch('https://diamond-hacks.onrender.com/prompt/questions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: text })
