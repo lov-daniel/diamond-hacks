@@ -2,21 +2,46 @@
 
 document.getElementById("Bionic-Text").addEventListener("click", async () => { 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["disableAll.js"] });
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content.js"] });
+  // First disable all functionalities.
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["disableAll.js"]
+  });
+  // Then inject Bionic Text functionality.
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["content.js"]
+  });
 });
 
 document.getElementById("summarize").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   console.log("Triggering summarization on active tab...");
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["disableAll.js"] });
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["summarize.js"] });
+  // Disable all functionalities.
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["disableAll.js"]
+  });
+  // Then inject Summarization functionality.
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["summarize.js", "assets/pdf.min.js"]
+  });
 });
+
 document.getElementById("questions").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   console.log("Triggering practice questions on active tab...");
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["disableAll.js"] });
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["practice-questions.js"] });
+  // Disable all functionalities.
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["disableAll.js"]
+  });
+  // Then inject Practice Questions functionality.
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["practice-questions.js", "assets/pdf.min.js"]
+  });
 });
 
 document.getElementById("start-highlight").addEventListener("click", async () => {
@@ -24,12 +49,13 @@ document.getElementById("start-highlight").addEventListener("click", async () =>
   chrome.storage.local.get(["highlightSpeed"], async (result) => {
     const sliderValue = Number(result.highlightSpeed) || 2; // default to 2 words per second
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    // First, disable all functionalities (this pauses highlighting).
+    // Disable all functionalities (this pauses highlighting).
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: ["disableAll.js"]
     });
-    // NEW: Immediately re-enable highlighting by resetting the disable flag.
+    // Immediately re-enable highlighting by resetting the disable flag.
+    // (Note: The animation remains paused until resumed via Ctrl+Space or a click on the element.)
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       function: () => { window.disableHighlighting = false; }
@@ -39,25 +65,19 @@ document.getElementById("start-highlight").addEventListener("click", async () =>
       target: { tabId: tab.id },
       files: ["highlighter.js"]
     });
-
-  console.log("Triggering summarization on active tab...");
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ["assets/pdf.min.js", "practice-questions.js"]
-  });
   });
 });
 
 
-
 // --- DOMContentLoaded: Setup UI Persistence & Active Button State ---
 document.addEventListener("DOMContentLoaded", () => {
-  // Instead of unconditionally removing the active state, check if the current tab URL matches the stored one.
+  // Query the current active tab URL.
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentUrl = tabs[0].url;
+    // Retrieve any stored active state.
     chrome.storage.local.get(['activeButton', 'activeTabUrl'], (result) => {
+      // Re-apply active state only if the stored URL matches the current URL.
       if (result.activeTabUrl && result.activeTabUrl === currentUrl) {
-        // If the stored URL matches, re-apply the active state.
         const activeButtonIndex = result.activeButton;
         if (activeButtonIndex !== undefined) {
           const buttons = document.querySelectorAll('button');
@@ -72,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       } else {
-        // Clear state if URL doesn't match.
+        // Clear stored state if URL does not match.
         chrome.storage.local.remove(['activeButton', 'activeTabUrl']);
       }
     });
@@ -81,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const speedSlider = document.getElementById("highlight-speed");
   const speedDisplay = document.getElementById("speed-value");
 
-  // Persist and display slider value.
+  // Persist and display the slider value.
   chrome.storage.local.get(["highlightSpeed"], (result) => {
     const storedValue = result.highlightSpeed || "2";
     speedSlider.value = storedValue;
@@ -93,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.local.set({ highlightSpeed: this.value });
   });
 
-  // Button active state (session-only)
+  // --- Button Active State (Session-only) ---
   const buttons = document.querySelectorAll('button');
   buttons.forEach((button, index) => {
     button.addEventListener('click', () => {
