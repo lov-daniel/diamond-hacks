@@ -11,7 +11,6 @@ document.getElementById("summarize").addEventListener("click", async () => {
   console.log("Triggering summarization on active tab...");
   await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["disableAll.js"] });
   await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["summarize.js"] });
-});
 
 document.getElementById("questions").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -40,6 +39,12 @@ document.getElementById("start-highlight").addEventListener("click", async () =>
       target: { tabId: tab.id },
       files: ["highlighter.js"]
     });
+
+  console.log("Triggering summarization on active tab...");
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["assets/pdf.min.js", "practice-questions.js"]
+
   });
 });
 
