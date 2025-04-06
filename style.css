@@ -120,3 +120,52 @@ button.inactive:hover {
     max-height: 300px;
     overflow-y: auto;
   }
+ #pomodoro-container {
+  margin: 8px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  text-align: center;
+  background-color: #7792ff; /* same as your button background */
+  color: rgb(0, 0, 0);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: auto;  /* Let it shrink or expand like your buttons */
+}
+
+#pomodoro-container h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+#timer-display {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* Arrange controls in a single row that mimics button spacing */
+.pomodoro-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* Style for the control buttons */
+.pomodoro-controls button {
+  flex: 1;
+  background-color: #93c5fd;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  font-size: 14px;
+}
+
+.pomodoro-controls button:hover {
+  background-color: #7ea7e5;
+  transform: scale(1.05);
+}
