@@ -44,6 +44,34 @@ document.getElementById("questions").addEventListener("click", async () => {
   });
 });
 
+// Add this with the other button handlers
+document.getElementById("clear-all").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  console.log("Clearing all changes from the page...");
+  
+  // First disable all functionalities
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["disableAll.js"]
+  });
+  
+  // Then clear all changes
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["clearAll.js"]
+  });
+  
+  // Clear active button state
+  chrome.storage.local.remove(['activeButton', 'activeTabUrl']);
+  
+  // Reset all buttons to inactive
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+    btn.classList.add('inactive');
+  });
+});
+
 document.getElementById("start-highlight").addEventListener("click", async () => {
   // Retrieve the current slider value for highlighting speed.
   chrome.storage.local.get(["highlightSpeed"], async (result) => {
@@ -125,97 +153,217 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Pomodoro Timer Code ---
-  const DEFAULT_DURATION = 25 * 60; // 25 minutes in seconds
-  let timerInterval = null;
-  let remainingTime = DEFAULT_DURATION;
-  let isPaused = false;
+  // Pomodoro constants
+  const FOCUS_DURATION = 25 * 60; // 25 minutes
+  const BREAK_DURATION = 5 * 60; // 5 minutes
 
-  // Pomodoro elements (make sure these IDs exist in your HTML)
+  // Get elements
   const timerDisplay = document.getElementById('timer-display');
   const pomodoroStart = document.getElementById('pomodoro-start');
   const pomodoroPause = document.getElementById('pomodoro-pause');
   const pomodoroStop = document.getElementById('pomodoro-stop');
+  const modeFocusBtn = document.getElementById('mode-focus');
+  const modeBreakBtn = document.getElementById('mode-break');
+
+  let timerInterval = null;
+  let remainingTime = FOCUS_DURATION;
+  let isPaused = true;
+  let currentMode = 'focus'; // 'focus' or 'break'
+  let hasNotified = false; // Prevent multiple notifications
+
+  // Load saved timer state from chrome.storage.local
+  function loadTimerState() {
+    chrome.storage.local.get(['pomodoroState'], (result) => {
+      if (result.pomodoroState) {
+        const state = result.pomodoroState;
+        remainingTime = state.remainingTime;
+        isPaused = state.isPaused;
+        currentMode = state.mode || 'focus';
+        hasNotified = state.hasNotified || false;
+
+        // Calculate elapsed time if timer was running
+        if (!isPaused && state.lastUpdate) {
+          const elapsed = Math.floor((Date.now() - state.lastUpdate) / 1000);
+          remainingTime = Math.max(0, remainingTime - elapsed);
+
+          // Check if timer completed while popup was closed
+          if (remainingTime === 0 && !hasNotified) {
+            handleTimerComplete();
+          }
+        }
+
+        updateDisplay();
+        updateModeButtons();
+        updatePauseButton();
+
+        // Resume timer if it was running
+        if (!isPaused && remainingTime > 0) {
+          startTimer();
+        }
+      }
+    });
+  }
+
+  // Save timer state to chrome.storage.local
+  function saveTimerState() {
+    const state = {
+      remainingTime,
+      isPaused,
+      mode: currentMode,
+      lastUpdate: Date.now(),
+      hasNotified
+    };
+    chrome.storage.local.set({ pomodoroState: state });
+  }
 
   // Update the timer display (mm:ss)
-  function updateTimerDisplay() {
+  function updateDisplay() {
     const minutes = Math.floor(remainingTime / 60).toString().padStart(2, '0');
     const seconds = (remainingTime % 60).toString().padStart(2, '0');
     timerDisplay.textContent = `${minutes}:${seconds}`;
   }
 
-  // Save the current timer state to localStorage for persistence.
-  function savePomodoroState() {
-    const state = {
-      remainingTime: remainingTime,
-      isPaused: isPaused,
-      lastUpdate: Date.now()
-    };
-    localStorage.setItem('pomodoroState', JSON.stringify(state));
+  // Update mode button states
+  function updateModeButtons() {
+  if (currentMode === 'focus') {
+    modeFocusBtn.classList.add('active-mode');
+    modeBreakBtn.classList.remove('active-mode');
+    document.getElementById('pomodoro-container').classList.remove('break-mode'); 
+  } else {
+    modeBreakBtn.classList.add('active-mode');
+    modeFocusBtn.classList.remove('active-mode');
+    document.getElementById('pomodoro-container').classList.add('break-mode');
   }
 
-  // Load timer state from localStorage.
-  function loadPomodoroState() {
-    const savedState = localStorage.getItem('pomodoroState');
-    if (savedState) {
-      const state = JSON.parse(savedState);
-      remainingTime = state.remainingTime;
-      isPaused = state.isPaused;
-      // If timer was running, calculate elapsed time.
-      if (!isPaused && state.lastUpdate) {
-        const elapsed = Math.floor((Date.now() - state.lastUpdate) / 1000);
-        remainingTime = Math.max(0, remainingTime - elapsed);
+    // Disable mode buttons while timer is running
+    const isRunning = !isPaused && remainingTime > 0;
+    modeFocusBtn.disabled = isRunning;
+    modeBreakBtn.disabled = isRunning;
+  }
+
+  // Update pause button text
+function updatePauseButton() {
+  const initialTime = currentMode === 'focus' ? FOCUS_DURATION : BREAK_DURATION;
+  if (remainingTime === initialTime && isPaused) {
+    pomodoroStart.textContent = 'Start';
+  } else {
+    pomodoroStart.textContent = isPaused ? 'Resume' : 'Pause';
+  }
+}
+
+  // Handle timer completion
+  function handleTimerComplete() {
+    if (hasNotified) return; // Already notified
+    
+    hasNotified = true;
+    clearInterval(timerInterval);
+
+    // Show notification
+    const completedMode = currentMode;
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'assets/Icon.png',
+      title: completedMode === 'focus' ? '🎯 Focus Complete!' : '☕ Break Complete!',
+      message: completedMode === 'focus' 
+        ? 'Great work! Time for a 5-minute break.' 
+        : 'Break is over. Ready to focus again?',
+      priority: 2,
+      requireInteraction: false
+    });
+
+    // Auto-switch to the other mode
+    setTimeout(() => {
+      if (currentMode === 'focus') {
+        switchMode('break');
+      } else {
+        switchMode('focus');
       }
-      updateTimerDisplay();
-    }
+      hasNotified = false;
+      saveTimerState();
+    }, 1000);
   }
 
-  // Start (or resume) the Pomodoro timer.
-  function startPomodoro() {
+  // Start the timer countdown
+  function startTimer() {
     clearInterval(timerInterval);
     isPaused = false;
-    savePomodoroState();
+    hasNotified = false;
+    saveTimerState();
+    updatePauseButton();
+    updateModeButtons();
+
     timerInterval = setInterval(() => {
       if (!isPaused) {
         if (remainingTime > 0) {
           remainingTime--;
-          updateTimerDisplay();
-          savePomodoroState();
+          updateDisplay();
+          saveTimerState();
         } else {
-          clearInterval(timerInterval);
-          alert('Pomodoro complete!');
-          // Optionally, reset the timer here.
+          handleTimerComplete();
         }
       }
     }, 1000);
+
+    updatePauseButton();
   }
 
-  // Toggle pause/resume state.
-  function togglePomodoro() {
+  // Pause or resume the timer
+  function togglePause() {
     if (remainingTime <= 0) return;
+
     isPaused = !isPaused;
-    savePomodoroState();
-    pomodoroPause.textContent = isPaused ? 'Resume' : 'Pause';
+    saveTimerState();
+    updatePauseButton();
+    updateModeButtons();
+
+    if (!isPaused) {
+      startTimer();
+    } else {
+      clearInterval(timerInterval);
+    }
   }
 
-  // Stop the timer and reset to default duration.
-  function stopPomodoro() {
+  // Stop the timer and reset it
+  function stopTimer() {
     clearInterval(timerInterval);
-    remainingTime = DEFAULT_DURATION;
-    isPaused = false;
-    updateTimerDisplay();
-    savePomodoroState();
-    pomodoroPause.textContent = 'Pause';
+    isPaused = true;
+    hasNotified = false;
+    remainingTime = currentMode === 'focus' ? FOCUS_DURATION : BREAK_DURATION;
+    updateDisplay();
+    saveTimerState();
+    updatePauseButton();
+    updateModeButtons();
   }
 
-  // Event listeners for Pomodoro timer controls.
-  pomodoroStart.addEventListener('click', startPomodoro);
-  pomodoroPause.addEventListener('click', togglePomodoro);
-  pomodoroStop.addEventListener('click', stopPomodoro);
+  // Switch between Focus and Break modes
+  function switchMode(mode) {
+    if (!isPaused && remainingTime > 0) return; // Don't switch while running
 
-  // Initialize timer state on load.
-  loadPomodoroState();
-  // If the timer was running (not paused) and not at full duration, resume it.
-  if (!isPaused && remainingTime < DEFAULT_DURATION) {
-    startPomodoro();
+    currentMode = mode;
+    remainingTime = mode === 'focus' ? FOCUS_DURATION : BREAK_DURATION;
+    isPaused = true;
+    hasNotified = false;
+    clearInterval(timerInterval);
+    
+    updateDisplay();
+    updateModeButtons();
+    updatePauseButton();
+    saveTimerState();
   }
+
+  // Event Listeners
+  pomodoroStart.addEventListener('click', () => {
+    if (isPaused) {
+      startTimer();
+    } else {
+      togglePause();
+    }
+  });
+  pomodoroStop.addEventListener('click', stopTimer);
+
+  modeFocusBtn.addEventListener('click', () => switchMode('focus'));
+  modeBreakBtn.addEventListener('click', () => switchMode('break'));
+
+  // Initialize timer state on load
+  loadTimerState();
 });
