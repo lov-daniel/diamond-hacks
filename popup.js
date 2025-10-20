@@ -241,17 +241,17 @@ document.addEventListener("DOMContentLoaded", () => {
     modeBreakBtn.disabled = isRunning;
   }
 
-  // Update pause button text
-function updatePauseButton() {
-  const initialTime = currentMode === 'focus' ? FOCUS_DURATION : BREAK_DURATION;
-  if (remainingTime === initialTime && isPaused) {
-    pomodoroStart.textContent = 'Start';
-  } else {
-    pomodoroStart.textContent = isPaused ? 'Resume' : 'Pause';
+    // Update pause button text
+  function updatePauseButton() {
+    const initialTime = currentMode === 'focus' ? FOCUS_DURATION : BREAK_DURATION;
+    if (remainingTime === initialTime && isPaused) {
+      pomodoroStart.textContent = 'Start';
+    } else {
+      pomodoroStart.textContent = isPaused ? 'Resume' : 'Pause';
+    }
   }
-}
 
-  // Handle timer completion
+    // Handle timer completion
   function handleTimerComplete() {
     if (hasNotified) return; // Already notified
     
@@ -260,16 +260,23 @@ function updatePauseButton() {
 
     // Show notification
     const completedMode = currentMode;
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'assets/Icon.png',
-      title: completedMode === 'focus' ? '🎯 Focus Complete!' : '☕ Break Complete!',
-      message: completedMode === 'focus' 
-        ? 'Great work! Time for a 5-minute break.' 
-        : 'Break is over. Ready to focus again?',
-      priority: 2,
-      requireInteraction: false
-    });
+    
+    // Try to use chrome.notifications, fallback to alert if not available
+    if (chrome.notifications) {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'assets/Icon.png',
+        title: completedMode === 'focus' ? '🎯 Focus Complete!' : '☕ Break Complete!',
+        message: completedMode === 'focus' 
+          ? 'Great work! Time for a 5-minute break.' 
+          : 'Break is over. Ready to focus again?',
+        priority: 2,
+        requireInteraction: false
+      });
+    } else {
+      // Fallback to alert if notifications not available
+      alert(completedMode === 'focus' ? '🎯 Focus Complete! Time for a break.' : '☕ Break Complete! Ready to focus?');
+    }
 
     // Auto-switch to the other mode
     setTimeout(() => {
@@ -282,7 +289,6 @@ function updatePauseButton() {
       saveTimerState();
     }, 1000);
   }
-
   // Start the timer countdown
   function startTimer() {
     clearInterval(timerInterval);
