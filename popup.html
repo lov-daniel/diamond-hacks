@@ -33,9 +33,10 @@
       Start Highlighting
     </button>
 
+
     <div id="speed-container">
       <label for="highlight-speed">Words Per Second:</label>
-      <input type="range" id="highlight-speed" min="1" max="10" step="1" value="2">
+      <input type="range" id="highlight-speed" min="1" max="20" step="1" value="2">
       <span id="speed-value">2</span>
       <p>Ctrl + Space to pause/unpause highlighting</p>
     </div>
@@ -51,8 +52,14 @@
     <button id="pomodoro-pause">Pause</button>
     <button id="pomodoro-stop">Restart</button>
   </div>
+  
 </div>
 
+<div id="clear-container">
+   <button id="clear-all" class="clear-button">
+      Clear All Changes
+    </button>
+</div>
   <p id="output"></p>
 
   <script src="popup.js"></script>

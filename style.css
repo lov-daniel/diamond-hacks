@@ -169,3 +169,12 @@ button.inactive:hover {
   background-color: #7ea7e5;
   transform: scale(1.05);
 }
+
+.clear-button {
+  background-color: #e74c3c !important;
+  border-color: #c0392b !important;
+}
+
+.clear-button:hover {
+  background-color: #c0392b !important;
+}

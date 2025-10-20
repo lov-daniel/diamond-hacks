@@ -44,6 +44,35 @@ document.getElementById("questions").addEventListener("click", async () => {
   });
 });
 
+// Add this with the other button handlers
+document.getElementById("clear-all").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  console.log("Clearing all changes from the page...");
+  
+  // First disable all functionalities
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["disableAll.js"]
+  });
+  
+  // Then clear all changes
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["clearAll.js"]
+  });
+  
+  // Clear active button state
+  chrome.storage.local.remove(['activeButton', 'activeTabUrl']);
+  
+  // Reset all buttons to inactive
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+    btn.classList.add('inactive');
+  });
+});
+
+
 document.getElementById("start-highlight").addEventListener("click", async () => {
   // Retrieve the current slider value for highlighting speed.
   chrome.storage.local.get(["highlightSpeed"], async (result) => {
