@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Scraper</title>
+  <title>StudyBox</title>
   <link href="style.css" rel="stylesheet" />
   <script src="assets/js/pdf.min.js"></script>
 </head>
@@ -12,10 +12,11 @@
     StudyBox
   </h1>
 
+  <!-- First Row: 4 Buttons + Speed Control -->
   <div class="tool-grid">
     <button id="Bionic-Text">
       <img src="assets/text.png" class="tool-icon" alt="bionic text Icon" />
-        Bionic   Text
+      Bionic Text
     </button>
 
     <button id="summarize">
@@ -33,33 +34,35 @@
       Start Highlighting
     </button>
 
-
     <div id="speed-container">
-      <label for="highlight-speed">Words Per Second:</label>
-      <input type="range" id="highlight-speed" min="1" max="20" step="1" value="2">
+      <label for="highlight-speed">Words/Sec:</label>
+      <input type="range" id="highlight-speed" min="1" max="20" step="1" value="10">
       <span id="speed-value">2</span>
-      <p>Ctrl + Space to pause/unpause highlighting</p>
+      <p>Ctrl + Space<br>to pause</p>
+    </div>
+  </div>
+
+  <!-- Second Row: Pomodoro Timer -->
+  <div id="pomodoro-container">
+    <!-- Mode Switch Buttons -->
+    <div class="mode-switch">
+      <button id="mode-focus" class="mode-btn active-mode">Focus (25min)</button>
+      <button id="mode-break" class="mode-btn">Break (5min)</button>
     </div>
     
+    <div id="timer-display">25:00</div>
+    
+    <div class="pomodoro-controls">
+      <button id="pomodoro-start">Start</button>
+      <button id="pomodoro-stop">Reset</button>
+    </div>
   </div>
 
-  <!-- Pomodoro Timer Section -->
-<div id="pomodoro-container">
-  <h2>Pomodoro Timer</h2>
-  <div id="timer-display">25:00</div>
-  <div class="pomodoro-controls">
-    <button id="pomodoro-start">Start</button>
-    <button id="pomodoro-pause">Pause</button>
-    <button id="pomodoro-stop">Restart</button>
-  </div>
-  
-</div>
+  <!-- Third Row: Clear Button -->
+  <button id="clear-all" class="clear-button">
+    Clear All Changes
+  </button>
 
-<div id="clear-container">
-   <button id="clear-all" class="clear-button">
-      Clear All Changes
-    </button>
-</div>
   <p id="output"></p>
 
   <script src="popup.js"></script>
